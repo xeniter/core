@@ -360,6 +360,7 @@ FLOWS = {
         "risco",
         "rituals_perfume_genie",
         "roku",
+        "romy",
         "roomba",
         "roon",
         "rpi_power",
