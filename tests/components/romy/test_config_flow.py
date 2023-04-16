@@ -1,4 +1,5 @@
 """Test the ROMY config flow."""
+import asyncio
 from unittest.mock import patch
 
 from homeassistant import config_entries, data_entry_flow
@@ -54,6 +55,12 @@ DISCOVERY_INFO = zeroconf.ZeroconfServiceInfo(
 #    assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
+def async_return(result):
+    f = asyncio.Future()
+    f.set_result(result)
+    return f
+
+
 # @pytest.mark.enable_socket
 # @pytest.mark.allow_hosts(['1.2.3.4'])
 async def test_zero_conf(hass: HomeAssistant) -> None:
@@ -62,13 +69,16 @@ async def test_zero_conf(hass: HomeAssistant) -> None:
     # assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # assert socket.socket.connect(('1.2.3.4', 8080))
 
+    # homeassistant.components.romy.utils.
     with patch(
-        "homeassistant.components.romy.utils.async_query",
-        return_value=async_return(True, ""),
+        "homeassistant.components.romy.config_flow.async_query",
+        # return_value=async_return((True, "")),
+        return_value=(True, '{"name": "myROMY"}'),
     ):
         with patch(
-            "homeassistant.components.romy.utils.async_query_with_http_status",
-            return_value=async_return(True, ""),
+            # "homeassistant.components.romy.utils.async_query_with_http_status",
+            "homeassistant.components.romy.config_flow.async_query_with_http_status",
+            return_value=(True, "", 200),
         ):
             result = await hass.config_entries.flow.async_init(
                 DOMAIN,
