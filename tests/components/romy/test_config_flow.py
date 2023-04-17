@@ -69,15 +69,30 @@ async def test_show_user_form_with_empty_config(hass: HomeAssistant) -> None:
             DOMAIN,
             context={"source": config_entries.SOURCE_USER},
             data=INPUT_EMPTY_CONFIG,
-            local_http_interface_is_locked=True
         )
 
     assert result["errors"] is not None
     assert result["step_id"] == "user"
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
 
-async def test_show_user_form_with_config_locked_robot(hass: HomeAssistant) -> None:
-    """Test that the user set up form with config."""
+DISCOVERY_INFO = zeroconf.ZeroconfServiceInfo(
+    host="1.2.3.4",
+    hostname="myROMY",
+    port=8080,
+    type="mock_type",
+    addresses="addresse",
+    name="myROMY",
+    properties={zeroconf.ATTR_PROPERTIES_ID: "aicu-aicgsbksisfapcjqmqjq"},
+)
+
+INPUT_CONFIG_LOCKED = {
+    CONF_HOST: CONFIG[CONF_HOST],
+    CONF_PORT: CONFIG[CONF_PORT],
+    CONF_NAME: CONFIG[CONF_NAME], 
+}
+
+async def test_show_user_form_with_config_discovered_locked_robot(hass: HomeAssistant) -> None:
+    """Test that we send unlock command if discover locked robot"""
 
     # patch for set robot name call
     with patch(
@@ -87,11 +102,33 @@ async def test_show_user_form_with_config_locked_robot(hass: HomeAssistant) -> N
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": config_entries.SOURCE_USER},
-            data=INPUT_CONFIG,
+            data=INPUT_CONFIG_LOCKED,
         )
 
     assert "errors" not in result
     assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+
+
+async def test_show_user_form_with_config_set_robot_name_call_fails(hass: HomeAssistant) -> None:
+    """Test the case where the set robot name call fails"""
+
+    # patch for set robot name call
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(False, '{}'),
+        
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_USER},
+            data=INPUT_CONFIG_LOCKED,
+        )
+
+    assert "errors" not in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+
+
+
 
 DISCOVERY_INFO = zeroconf.ZeroconfServiceInfo(
     host="1.2.3.4",
@@ -143,7 +180,40 @@ async def test_zero_conf_locked_interface_robot(hass: HomeAssistant) -> None:
     assert result["step_id"] == "user"
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
 
+async def test_zero_conf_bad_request(hass: HomeAssistant) -> None:
+    """Test zerconf with bad request response from robot"""
 
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(True, '{"name": "myROMY"}'),
+    ):
+        with patch(
+            "homeassistant.components.romy.config_flow.async_query_with_http_status",
+            return_value=(False, "", 400),
+        ):
+            result = await hass.config_entries.flow.async_init(
+                DOMAIN,
+                data=DISCOVERY_INFO,
+                context={"source": config_entries.SOURCE_ZEROCONF},
+            )
+
+    assert result["step_id"] == "user"
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+async def test_zero_conf_robot_not_reachable(hass: HomeAssistant) -> None:
+    """Test zerconf where robot is not reachable"""
+
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(False, ''),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            data=DISCOVERY_INFO,
+            context={"source": config_entries.SOURCE_ZEROCONF},
+        )
+    
+    assert result["type"] == data_entry_flow.RESULT_TYPE_ABORT
 
 
 
