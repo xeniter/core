@@ -69,12 +69,29 @@ async def test_show_user_form_with_empty_config(hass: HomeAssistant) -> None:
             DOMAIN,
             context={"source": config_entries.SOURCE_USER},
             data=INPUT_EMPTY_CONFIG,
+            local_http_interface_is_locked=True
         )
 
     assert result["errors"] is not None
     assert result["step_id"] == "user"
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
 
+async def test_show_user_form_with_config_locked_robot(hass: HomeAssistant) -> None:
+    """Test that the user set up form with config."""
+
+    # patch for set robot name call
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(True, '{}'),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_USER},
+            data=INPUT_CONFIG,
+        )
+
+    assert "errors" not in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
 
 DISCOVERY_INFO = zeroconf.ZeroconfServiceInfo(
     host="1.2.3.4",
