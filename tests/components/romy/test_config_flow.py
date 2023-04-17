@@ -17,12 +17,6 @@ VALID_CONFIG_WITH_PASS = {
     CONF_PASSWORD: "password",
 }
 
-
-# def _create_mocked_romy():
-#    mocked_romy = MagicMock()
-#    return mocked_romy
-
-
 async def test_show_user_form(hass: HomeAssistant) -> None:
     """Test that the user set up form is served."""
     result = await hass.config_entries.flow.async_init(
@@ -30,6 +24,54 @@ async def test_show_user_form(hass: HomeAssistant) -> None:
         context={"source": config_entries.SOURCE_USER},
     )
 
+    assert result["errors"] is not None
+    assert result["step_id"] == "user"
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+
+MOCK_IP = "1.2.3.4"
+CONFIG = {CONF_HOST: MOCK_IP, CONF_PORT: 8080, CONF_NAME: "myROMY"}
+
+INPUT_CONFIG = {
+    CONF_HOST: CONFIG[CONF_HOST],
+    CONF_PORT: CONFIG[CONF_PORT],
+    CONF_NAME: CONFIG[CONF_NAME],    
+}
+
+async def test_show_user_form_with_config(hass: HomeAssistant) -> None:
+    """Test that the user set up form with config."""
+
+    # patch for set robot name call
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(True, '{}'),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_USER},
+            data=INPUT_CONFIG,
+        )
+
+    assert "errors" not in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+
+INPUT_EMPTY_CONFIG = {}
+
+async def test_show_user_form_with_empty_config(hass: HomeAssistant) -> None:
+    """Test that the user set up form with empty config."""
+
+    # patch for set robot name call
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(True, '{}'),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_USER},
+            data=INPUT_EMPTY_CONFIG,
+        )
+
+    assert result["errors"] is not None
     assert result["step_id"] == "user"
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
 
@@ -41,42 +83,17 @@ DISCOVERY_INFO = zeroconf.ZeroconfServiceInfo(
     type="mock_type",
     addresses="addresse",
     name="myROMY",
-    properties={zeroconf.ATTR_PROPERTIES_ID: "romy-blubF"},
+    properties={zeroconf.ATTR_PROPERTIES_ID: "aicu-aicgsbksisfapcjqmqjq"},
 )
 
+async def test_zero_conf_unlocked_interface_robot(hass: HomeAssistant) -> None:
+    """Test zerconf with already unlocked robot"""
 
-# @pytest.fixture(name="mock_socket")
-# def fixture_mock_socket():
-#    """Mock socket fixture."""
-#    with patch("socket.socket") as mock_socket:
-#        yield mock_socket
-
-# def test_explicitly_enable_socket(socket_enabled):
-#    assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-
-def async_return(result):
-    f = asyncio.Future()
-    f.set_result(result)
-    return f
-
-
-# @pytest.mark.enable_socket
-# @pytest.mark.allow_hosts(['1.2.3.4'])
-async def test_zero_conf(hass: HomeAssistant) -> None:
-    """Test zeroConf."""
-
-    # assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # assert socket.socket.connect(('1.2.3.4', 8080))
-
-    # homeassistant.components.romy.utils.
     with patch(
         "homeassistant.components.romy.config_flow.async_query",
-        # return_value=async_return((True, "")),
         return_value=(True, '{"name": "myROMY"}'),
     ):
         with patch(
-            # "homeassistant.components.romy.utils.async_query_with_http_status",
             "homeassistant.components.romy.config_flow.async_query_with_http_status",
             return_value=(True, "", 200),
         ):
@@ -88,6 +105,33 @@ async def test_zero_conf(hass: HomeAssistant) -> None:
 
     assert result["step_id"] == "user"
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+async def test_zero_conf_locked_interface_robot(hass: HomeAssistant) -> None:
+    """Test zerconf with locked local http interface robot"""
+
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(True, '{"name": "myROMY"}'),
+    ):
+        with patch(
+            "homeassistant.components.romy.config_flow.async_query_with_http_status",
+            return_value=(False, "", 403),
+        ):
+            result = await hass.config_entries.flow.async_init(
+                DOMAIN,
+                data=DISCOVERY_INFO,
+                context={"source": config_entries.SOURCE_ZEROCONF},
+            )
+
+    assert result["step_id"] == "user"
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+
+
+
+
+
+
 
 
 # https://snyk.io/advisor/python/asynctest/functions/asynctest.mock.patch
