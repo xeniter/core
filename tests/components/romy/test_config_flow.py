@@ -215,11 +215,7 @@ async def test_zero_conf_robot_not_reachable(hass: HomeAssistant) -> None:
     
     assert result["type"] == data_entry_flow.RESULT_TYPE_ABORT
 
-
-
-
-
-async def test_zero_conf_locked_interface_robot2(hass: HomeAssistant) -> None:
+async def test_zero_conf_with_user_provided_password(hass: HomeAssistant) -> None:
     """Test zerconf with locked local http interface robot"""
 
     with patch(
@@ -236,44 +232,13 @@ async def test_zero_conf_locked_interface_robot2(hass: HomeAssistant) -> None:
                 context={"source": config_entries.SOURCE_ZEROCONF},
             )
 
-    with patch(
-        "homeassistant.components.romy.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
-        result = await hass.config_entries.flow.async_configure(
-            flow_id=result["flow_id"], user_input={}
-        )
-        await hass.async_block_till_done()
+        with patch(
+            "homeassistant.components.romy.async_setup_entry",
+            return_value=True,
+        ) as mock_setup_entry:
+            result = await hass.config_entries.flow.async_configure(
+                flow_id=result["flow_id"], user_input=VALID_CONFIG_WITH_PASS
+            )            
 
-    
+    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
 
-
-
-
-    #assert result.get("step_id") == "zeroconf_confirm"
-    #assert result.get("type") == FlowResultType.FORM
-
-    #progress = hass.config_entries.flow.async_progress()
-
-
-    #print("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
-    #print(result["step_id"])
-    assert result["step_id"] == "user"
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-
-
-
-# https://snyk.io/advisor/python/asynctest/functions/asynctest.mock.patch
-
-# async def test_connect(self):
-#        with amock.patch("aiohttp.ClientSession.get") as patched_request:
-#            mockresponse = amock.CoroutineMock()
-#            mockresponse.status = 200
-#            mockresponse.json = amock.CoroutineMock(return_value={"login": "opsdroid"})
-#            patched_request.return_value = asyncio.Future()
-#            patched_request.return_value.set_result(mockresponse)
-#            await self.connector.connect()
-
-
-# pytest ./tests/components/romy/ --cov=homeassistant.components.romy --cov-report term-missing -v
-# python -m trace -c -m -C . /home/nios/gits/core/venv/bin/pytest  ./tests/components/romy/ --cov=homeassistant.components.romy --cov-report term-missing -v
