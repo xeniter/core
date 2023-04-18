@@ -39,7 +39,7 @@ async def _async_query(
     try:
         websession = async_get_clientsession(hass)
 
-        async with timeout(timeout):
+        with async_timeout.timeout(timeout):
             url = f"http://{host}:{port}/{command}"
             _LOGGER.debug("requesting url: %s", url)
             webresponse = await websession.get(url)

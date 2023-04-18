@@ -43,7 +43,7 @@ def _schema_with_defaults_and_password(
     )
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle config flow for ROMY."""
 
     VERSION = 1
@@ -181,9 +181,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_user()
 
 
-class CannotConnect(exceptions.HomeAssistantError):
-    """Error to indicate we cannot connect."""
+# class CannotConnect(exceptions.HomeAssistantError):
+#     """Error to indicate we cannot connect."""
 
 
-class InvalidHost(exceptions.HomeAssistantError):
-    """Error to indicate there is an invalid hostname."""
+# class InvalidHost(exceptions.HomeAssistantError):
+#     """Error to indicate there is an invalid hostname."""

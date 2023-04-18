@@ -219,6 +219,48 @@ async def test_zero_conf_robot_not_reachable(hass: HomeAssistant) -> None:
 
 
 
+async def test_zero_conf_locked_interface_robot2(hass: HomeAssistant) -> None:
+    """Test zerconf with locked local http interface robot"""
+
+    with patch(
+        "homeassistant.components.romy.config_flow.async_query",
+        return_value=(True, '{"name": "myROMY"}'),
+    ):
+        with patch(
+            "homeassistant.components.romy.config_flow.async_query_with_http_status",
+            return_value=(False, "", 403),
+        ):
+            result = await hass.config_entries.flow.async_init(
+                DOMAIN,
+                data=DISCOVERY_INFO,
+                context={"source": config_entries.SOURCE_ZEROCONF},
+            )
+
+    with patch(
+        "homeassistant.components.romy.async_setup_entry",
+        return_value=True,
+    ) as mock_setup_entry:
+        result = await hass.config_entries.flow.async_configure(
+            flow_id=result["flow_id"], user_input={}
+        )
+        await hass.async_block_till_done()
+
+    
+
+
+
+
+    #assert result.get("step_id") == "zeroconf_confirm"
+    #assert result.get("type") == FlowResultType.FORM
+
+    #progress = hass.config_entries.flow.async_progress()
+
+
+    #print("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+    #print(result["step_id"])
+    assert result["step_id"] == "user"
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
 
 
 # https://snyk.io/advisor/python/asynctest/functions/asynctest.mock.patch
