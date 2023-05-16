@@ -1,19 +1,31 @@
 """ROMY Integration."""
 
-import logging
+import romy
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
+from homeassistant.const import CONF_HOST, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 
-_LOGGER = logging.getLogger(__name__)
-
-PLATFORMS = [Platform.VACUUM]
+from .const import DOMAIN, PLATFORMS
+from .coordinator import RomyVacuumCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Set up this integration using UI."""
+    """TODO."""
+
+    password = ""
+    if CONF_PASSWORD in config_entry.data:
+        password = config_entry.data[CONF_PASSWORD]
+
+    newRomy = await romy.create_romy(config_entry.data[CONF_HOST], password)
+
+    coordinator = RomyVacuumCoordinator(hass, newRomy)
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][config_entry.entry_id] = coordinator
+
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+
     return True
 
 

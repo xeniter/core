@@ -1,20 +1,17 @@
 """Config flow for ROMY integration."""
 from __future__ import annotations
 
-import logging
-
+import romy
 import voluptuous as vol
 
 from homeassistant import config_entries
 
 from homeassistant.components import zeroconf
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_PORT
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN, LOGGER
 
 
 def _schema_with_defaults(
@@ -23,8 +20,7 @@ def _schema_with_defaults(
     return vol.Schema(
         {
             vol.Required(CONF_HOST, default=host): cv.string,
-            vol.Required(CONF_PORT, default=port): cv.port,
-            vol.Required(CONF_NAME, default=name): cv.string,
+            vol.Optional(CONF_NAME, default=name): cv.string,
         },
     )
 
@@ -35,8 +31,7 @@ def _schema_with_defaults_and_password(
     return vol.Schema(
         {
             vol.Required(CONF_HOST, default=host): cv.string,
-            vol.Required(CONF_PORT, default=port): cv.port,
-            vol.Required(CONF_NAME, default=name): cv.string,
+            vol.Optional(CONF_NAME, default=name): cv.string,
             vol.Required(CONF_PASSWORD, default=password): vol.All(str, vol.Length(8)),
         },
     )
@@ -68,42 +63,27 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Validate the user input
             if "host" not in user_input:
                 errors["host"] = "Please enter a host."
-            if "port" not in user_input:
-                errors["port"] = "Please enter a port."
-            if "name" not in user_input:
-                errors["name"] = "Please enter a name."
 
             if not errors:
                 ## Save the user input and finish the setup
                 self.host = user_input["host"]
-                self.port = int(user_input["port"])
                 self.name = user_input["name"]
 
-                # send unlock code
-                if self.local_http_interface_is_locked:
-                    self.password = user_input["password"]
-                    ret, response = await async_query(
-                        self.hass,
-                        self.host,
-                        int(self.port),
-                        f"set/unlock_http?pass={self.password}",
-                    )
-                    if not ret:
-                        _LOGGER.error("Unlock of ROMY robot failed: %s", response)
-                        errors[CONF_PASSWORD] = "wrong password"
-                        return self.async_show_form(
-                            step_id="user", data_schema=data, errors=errors
-                        )
+                newROMY = await romy.create_romy(self.host, self.password)
 
-                # set name of robot
-                ret, _ = await async_query(
-                    self.hass,
-                    self.host,
-                    int(self.port),
-                    f"set/robot_name?name={self.name}",
-                )
-                if not ret:
-                    _LOGGER.error("Failed to set robot name to: %s", self.name)
+                if not newROMY.is_initialized:
+                    LOGGER.error("not is_initialized")
+                    errors[CONF_HOST] = "wrong host"
+                    return self.async_show_form(
+                        step_id="user", data_schema=data, errors=errors
+                    )
+
+                if not newROMY.is_unlocked:
+                    LOGGER.error("not is_unlocked")
+                    errors[CONF_PASSWORD] = "wrong password"
+                    return self.async_show_form(
+                        step_id="user", data_schema=data, errors=errors
+                    )
 
                 return self.async_create_entry(
                     title=user_input["name"], data=user_input
@@ -116,11 +96,11 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle zeroconf discovery."""
 
-        _LOGGER.debug("Zeroconf discovery_info: %s", discovery_info)
+        LOGGER.debug("Zeroconf discovery_info: %s", discovery_info)
 
         # extract unique id and stop discovery if robot is already added
         unique_id = discovery_info.hostname.split(".")[0]
-        _LOGGER.debug("Unique_id: %s", unique_id)
+        LOGGER.debug("Unique_id: %s", unique_id)
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured()
 
