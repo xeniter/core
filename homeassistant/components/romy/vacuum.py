@@ -18,7 +18,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN, ICON, LOGGER
 from .coordinator import RomyVacuumCoordinator
 
-
 FAN_SPEED_NONE = "Default"
 FAN_SPEED_NORMAL = "Normal"
 FAN_SPEED_SILENT = "Silent"

@@ -14,7 +14,6 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, LOGGER
 
-
 def _schema_with_defaults(
     host: str = "", port: int = 8080, name: str = ""
 ) -> vol.Schema:
