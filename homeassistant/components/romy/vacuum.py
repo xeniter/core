@@ -8,6 +8,7 @@ https://home-assistant.io/components/vacuum.romy/.
 from collections.abc import Mapping
 from typing import Any
 
+<<<<<<< HEAD
 from romy import RomyRobot
 
 from homeassistant.components.vacuum import VacuumEntity, VacuumEntityFeature
@@ -17,6 +18,16 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, ICON, LOGGER
 from .coordinator import RomyVacuumCoordinator
+=======
+from homeassistant.components.vacuum import VacuumEntity, VacuumEntityFeature
+
+from .coordinator import RomyVacuumCoordinator
+
+# _LOGGER = logging.getLogger(__name__)
+
+ICON = "mdi:robot-vacuum"
+PLATFORM = "romy"
+>>>>>>> cc525f50dd (pypi wip)
 
 FAN_SPEED_NONE = "Default"
 FAN_SPEED_NORMAL = "Normal"
@@ -48,7 +59,6 @@ SUPPORT_ROMY_ROBOT = (
     | VacuumEntityFeature.TURN_ON
     | VacuumEntityFeature.FAN_SPEED
 )
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -86,7 +96,6 @@ class RomyVacuumEntity(VacuumEntity):
         self.romy = romy
         self._device_info = device_info
         self._attr_unique_id = self.romy.unique_id
-
         self._battery_level = None
         self._fan_speed = FAN_SPEEDS.index(FAN_SPEED_NONE)
         self._fan_speed_update = False
