@@ -1,7 +1,6 @@
 """Config flow for ROMY integration."""
 from __future__ import annotations
 
-import json
 import logging
 
 import voluptuous as vol
@@ -14,7 +13,6 @@ from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN
-from .utils import async_query, async_query_with_http_status
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -126,62 +124,18 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured()
 
-        # set to default port
-        discovery_info.port = 8080
-
-        # get robot name
-        ret, json_response = await async_query(
-            self.hass, discovery_info.host, discovery_info.port, "get/robot_name"
-        )
-
-        # in case it did not work try again on different port
-        if not ret:
-            discovery_info.port = 10009
-            ret, json_response = await async_query(
-                self.hass, discovery_info.host, discovery_info.port, "get/robot_name"
-            )
-            if not ret:
-                _LOGGER.error("Error connecting to ROMY robot!")
-                return self.async_abort(reason="unable_to_connect")
-
-        status = json.loads(json_response)
-        discovery_info.name = status["name"]
-
-        # check if local http interface is locked
-        _, _, http_status = await async_query_with_http_status(
-            self.hass,
-            discovery_info.host,
-            discovery_info.port,
-            "ishttpinterfacelocked",
-        )
-        if http_status == 400:
-            self.local_http_interface_is_locked = False
-        if http_status == 403:
-            self.local_http_interface_is_locked = True
-            _LOGGER.info("ROMYs local http interface is locked!")
-
         self.context.update(
             {
                 "title_placeholders": {
-                    "name": f"{discovery_info.name} ({discovery_info.host})"
+                    "name": f"{unique_id.split('-')[1]} ({discovery_info.host})"
                 },
-                "configuration_url": f"http://{discovery_info.host}:{discovery_info.port}",
+                "configuration_url": f"http://{discovery_info.host}:8080",
             }
         )
 
-        # if interface is locked add password to scheme
-        if self.local_http_interface_is_locked:
-            self.discovery_schema = _schema_with_defaults_and_password(
-                host=discovery_info.host,
-                port=discovery_info.port,
-                name=discovery_info.name,
-                password="",
-            )
-        else:
-            self.discovery_schema = _schema_with_defaults(
-                host=discovery_info.host,
-                port=discovery_info.port,
-                name=discovery_info.name,
-            )
+        self.discovery_schema = _schema_with_defaults(
+            host=discovery_info.host,
+            port=discovery_info.port,
+        )
 
         return await self.async_step_user()

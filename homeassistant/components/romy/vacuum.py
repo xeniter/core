@@ -22,8 +22,6 @@ from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .utils import async_query
-
 _LOGGER = logging.getLogger(__name__)
 
 ICON = "mdi:robot-vacuum"
