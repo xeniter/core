@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import romy
+
 import voluptuous as vol
 
 from homeassistant import config_entries
