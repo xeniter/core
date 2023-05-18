@@ -93,6 +93,28 @@ async def async_setup_entry(
     async_add_entities(entities, True)
 
 
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up ROMY vacuum cleaner."""
+
+    coordinator: RomyVacuumCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+    romy: RomyRobot = coordinator.romy
+
+    device_info = {
+        "manufacturer": "ROMY",
+        "model": romy.model,
+        "sw_version": romy.firmware,
+        "identifiers": {"serial": romy.unique_id},
+    }
+
+    romy_vacuum_entity = RomyVacuumEntity(coordinator, romy, device_info)
+    entities = [romy_vacuum_entity]
+    async_add_entities(entities, True)
+
+
 class RomyVacuumEntity(VacuumEntity):
     """Representation of a ROMY vacuum cleaner robot."""
 
@@ -148,9 +170,7 @@ class RomyVacuumEntity(VacuumEntity):
     @property
     def name(self) -> str:
         """Return the name of the device."""
-        return "hack"
-        # return self.romy.wtf
-
+        return self.romy.name
 
     @property
     def icon(self) -> str:
