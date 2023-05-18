@@ -12,7 +12,6 @@ from .const import DOMAIN, LOGGER, UPDATE_INTERVAL
 
 class RomyVacuumCoordinator(DataUpdateCoordinator[bool]):
     """ROMY Vacuum Coordinator."""
-
     def __init__(self, hass: HomeAssistant, romy: RomyRobot) -> None:
         """Setuping ROMY Vacuum Coordinator class."""
         super().__init__(hass, LOGGER, name=DOMAIN, update_interval=UPDATE_INTERVAL)
