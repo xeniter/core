@@ -6,7 +6,7 @@ https://home-assistant.io/components/vacuum.romy/.
 
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Optional
 
 from romy import RomyRobot
 

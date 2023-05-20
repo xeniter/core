@@ -127,5 +127,4 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 name=discovery_info.name,
                 password="",
             )
-
         return await self.async_step_user()

@@ -25,7 +25,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         LOGGER.info("Settings ROMY's name to: %s", new_romy.name)
 
     coordinator = RomyVacuumCoordinator(hass, new_romy)
-
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][config_entry.entry_id] = coordinator
 
