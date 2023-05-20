@@ -6,7 +6,7 @@ https://home-assistant.io/components/vacuum.romy/.
 
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Optional
 
 from romy import RomyRobot
 
@@ -120,12 +120,12 @@ class RomyVacuumEntity(VacuumEntity):
         return FAN_SPEEDS
 
     @property
-    def battery_level(self) -> int | None:
+    def battery_level(self) -> Optional[int]:
         """Return the battery level of the vacuum cleaner."""
         return self._battery_level
 
     @property
-    def status(self) -> str | None:
+    def status(self) -> Optional[str]:
         """Return the status of the vacuum cleaner."""
         return self._status
 

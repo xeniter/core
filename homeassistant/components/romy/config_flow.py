@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import romy
+
+from typing import Optional
+
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -46,11 +49,9 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Handle a config flow for ROMY."""
         self.discovery_schema = None
-        self.local_http_interface_is_locked = False
-        self.host: str | None = None
-        self.port: int | None = None
-        self.name: str | None = None
-        self.password: str | None = None
+        self.host: Optional[str] = None
+        self.name: Optional[str] = None
+        self.password: Optional[str] = None
 
     async def async_step_user(
         self, user_input: dict[str, str] | None = None
@@ -68,6 +69,8 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ## Save the user input and finish the setup
                 self.host = user_input["host"]
                 self.name = user_input["name"]
+                if "password" in user_input:
+                    self.password = user_input["password"]
 
                 newROMY = await romy.create_romy(self.host, self.password)
 
@@ -104,18 +107,29 @@ class RomyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured()
 
+        # get ROMY's name and check if local http interface is locked
+        newDiscoveredROMY = await romy.create_romy(discovery_info.host, "")
+        discovery_info.name = newDiscoveredROMY.name
+
         self.context.update(
             {
                 "title_placeholders": {
                     "name": f"{unique_id.split('-')[1]} ({discovery_info.host})"
                 },
-                "configuration_url": f"http://{discovery_info.host}:8080",
+                "configuration_url": f"http://{discovery_info.host}:{newDiscoveredROMY.port}",
             }
         )
 
-        self.discovery_schema = _schema_with_defaults(
-            host=discovery_info.host,
-            port=discovery_info.port,
-        )
-
+        if newDiscoveredROMY.is_unlocked:
+            self.discovery_schema = _schema_with_defaults(
+                host=discovery_info.host,
+                name=discovery_info.name,
+            )        
+        else:
+            self.discovery_schema = _schema_with_defaults_and_password(
+                host=discovery_info.host,
+                name=discovery_info.name,
+                password="",
+            )
+        
         return await self.async_step_user()
