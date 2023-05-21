@@ -2,9 +2,6 @@
 from __future__ import annotations
 
 import romy
-
-from typing import Optional
-
 import voluptuous as vol
 
 from homeassistant import config_entries
