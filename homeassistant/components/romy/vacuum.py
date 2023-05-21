@@ -6,7 +6,7 @@ https://home-assistant.io/components/vacuum.romy/.
 
 
 from collections.abc import Mapping
-from typing import Any, Optional
+from typing import Any
 
 from romy import RomyRobot
 
@@ -149,7 +149,8 @@ class RomyVacuumEntity(VacuumEntity):
     @property
     def name(self) -> str:
         """Return the name of the device."""
-        return self.romy.name
+        return "hack"
+        # return self.romy.name
 
 
     @property

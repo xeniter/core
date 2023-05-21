@@ -2285,7 +2285,7 @@ rokuecp==0.18.0
 romy==0.0.1
 
 # homeassistant.components.romy
-romy==0.0.2
+romy==0.0.6
 
 # homeassistant.components.roomba
 roombapy==1.6.8
