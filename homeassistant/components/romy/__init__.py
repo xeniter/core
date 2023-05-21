@@ -6,7 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, PLATFORMS, LOGGER
+from .const import DOMAIN, LOGGER, PLATFORMS
 from .coordinator import RomyVacuumCoordinator
 
 
@@ -17,14 +17,14 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     if CONF_PASSWORD in config_entry.data:
         password = config_entry.data[CONF_PASSWORD]
 
-    newRomy = await romy.create_romy(config_entry.data[CONF_HOST], password)
+    new_romy = await romy.create_romy(config_entry.data[CONF_HOST], password)
 
     name = config_entry.data[CONF_NAME]
-    if name != newRomy.name:
-        await newRomy.set_name(name)
-        LOGGER.info("Settings ROMY's name to: %s", newRomy.name)
+    if name != new_romy.name:
+        await new_romy.set_name(name)
+        LOGGER.info("Settings ROMY's name to: %s", new_romy.name)
 
-    coordinator = RomyVacuumCoordinator(hass, newRomy)
+    coordinator = RomyVacuumCoordinator(hass, new_romy)
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][config_entry.entry_id] = coordinator

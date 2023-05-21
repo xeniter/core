@@ -6,7 +6,7 @@ https://home-assistant.io/components/vacuum.romy/.
 
 
 from collections.abc import Mapping
-from typing import Any, Optional
+from typing import Any
 
 from romy import RomyRobot
 
@@ -94,16 +94,6 @@ class RomyVacuumEntity(VacuumEntity):
         self._state_attrs: dict[str, Any] = {}
         self._status = None
 
-    async def romy_async_query(self, command: str) -> tuple[bool, str]:
-        """Send a http query."""
-        ret, error = await async_query(self.hass, self._host, self._port, command)
-        if ret is False and error == "403":
-            LOGGER.error("Function romy_async_query returned forbidden, try to unlock")
-            # forbidden means http is locked, try to unlock again
-            await self.romy_async_query(f"set/unlock_http?pass={self._password}")
-
-        return (ret, error)
-
     @property
     def supported_features(self) -> VacuumEntityFeature:
         """Flag vacuum cleaner robot features that are supported."""
@@ -120,12 +110,12 @@ class RomyVacuumEntity(VacuumEntity):
         return FAN_SPEEDS
 
     @property
-    def battery_level(self) -> Optional[int]:
+    def battery_level(self) -> None | int:
         """Return the battery level of the vacuum cleaner."""
         return self._battery_level
 
     @property
-    def status(self) -> Optional[str]:
+    def status(self) -> None | str:
         """Return the status of the vacuum cleaner."""
         return self._status
 
@@ -137,7 +127,8 @@ class RomyVacuumEntity(VacuumEntity):
     @property
     def name(self) -> str:
         """Return the name of the device."""
-        return self.romy.name
+        return "hack"
+        # return self.romy.name
 
     @property
     def icon(self) -> str:

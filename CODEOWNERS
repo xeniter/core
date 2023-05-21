@@ -1023,6 +1023,7 @@ build.json @home-assistant/supervisor
 /homeassistant/components/roku/ @ctalkington
 /tests/components/roku/ @ctalkington
 /homeassistant/components/romy/ @xeniter
+/tests/components/romy/ @xeniter
 /homeassistant/components/roomba/ @pschmitt @cyr-ius @shenxn
 /tests/components/roomba/ @pschmitt @cyr-ius @shenxn
 /homeassistant/components/roon/ @pavoni
