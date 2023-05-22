@@ -128,7 +128,7 @@ class RomyVacuumEntity(VacuumEntity):
     def name(self) -> str:
         """Return the name of the device."""
         return "hack"
-        # return self.romy.name
+        # return self.romy.wtf
 
     @property
     def icon(self) -> str:
