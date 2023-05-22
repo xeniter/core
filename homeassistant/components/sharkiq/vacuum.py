@@ -111,9 +111,9 @@ class SharkVacuumEntity(CoordinatorEntity[SharkIqUpdateCoordinator], StateVacuum
     @property
     def model(self) -> str:
         """Vacuum model number."""
-        if self.sharkiq.vac_model_number:homeassistant/components/sharkiq/vacuum.py
-            return self.sharkiq.vac_model_numberY
-        return self.sharkiq.oem_model_numberX
+        if self.sharkiq.vac_model_number:
+            return self.sharkiq.vac_model_number
+        return self.sharkiq.oem_model_number
 
     @property
     def device_info(self) -> DeviceInfo:
