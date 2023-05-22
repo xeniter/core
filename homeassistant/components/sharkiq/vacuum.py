@@ -241,3 +241,6 @@ class SharkVacuumEntity(CoordinatorEntity[SharkIqUpdateCoordinator], StateVacuum
             ATTR_RECHARGE_RESUME: self.recharge_resume,
         }
         return data
+
+
+# hack
