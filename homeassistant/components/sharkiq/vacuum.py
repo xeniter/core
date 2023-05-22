@@ -112,7 +112,7 @@ class SharkVacuumEntity(CoordinatorEntity[SharkIqUpdateCoordinator], StateVacuum
     def model(self) -> str:
         """Vacuum model number."""
         if self.sharkiq.vac_model_number:
-            return self.sharkiq.vac_model_number
+            return self.sharkiq.vac_model_numberY
         return self.sharkiq.oem_model_numberX
 
     @property
