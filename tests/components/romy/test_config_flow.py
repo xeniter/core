@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.components.romy.const import DOMAIN
-from homeassistant.const import CONF_HOST, CONF_NAME
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 
 
@@ -26,7 +26,7 @@ async def test_show_user_form(hass: HomeAssistant) -> None:
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
 
 
-CONFIG = {CONF_HOST: "1.2.3.4", CONF_NAME: "myROMY"}
+CONFIG = {CONF_HOST: "1.2.3.4", CONF_NAME: "myROMY", CONF_PASSWORD: "12345678"}
 
 INPUT_CONFIG = {
     CONF_HOST: CONFIG[CONF_HOST],
@@ -50,6 +50,57 @@ async def test_show_user_form_with_config(hass: HomeAssistant) -> None:
             DOMAIN,
             context={"source": config_entries.SOURCE_USER},
             data=INPUT_CONFIG,
+        )
+
+    assert "errors" not in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+
+
+INPUT_CONFIG_HOST_MISSING = {
+    CONF_NAME: CONFIG[CONF_NAME],
+}
+
+
+async def test_show_user_form_with_config_with_missing_host(
+    hass: HomeAssistant,
+) -> None:
+    """Test that the user set up form with config where host is missing."""
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_USER},
+        data=INPUT_CONFIG_HOST_MISSING,
+    )
+
+    assert "errors" in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+
+INPUT_CONFIG_WITH_PASS = {
+    CONF_HOST: CONFIG[CONF_HOST],
+    CONF_NAME: CONFIG[CONF_NAME],
+    CONF_PASSWORD: CONFIG[CONF_PASSWORD],
+}
+
+
+async def test_show_user_form_with_config_which_contains_password(
+    hass: HomeAssistant,
+) -> None:
+    """Test that the user set up form with config which contains password."""
+
+    mocked_romy = _create_mocked_romy(
+        is_initialized=True,
+        is_unlocked=True,
+    )
+
+    with patch(
+        "homeassistant.components.romy.config_flow.romy.create_romy",
+        return_value=mocked_romy,
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_USER},
+            data=INPUT_CONFIG_WITH_PASS,
         )
 
     assert "errors" not in result
