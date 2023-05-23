@@ -2,6 +2,7 @@
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from homeassistant import config_entries, data_entry_flow
+from homeassistant.components import zeroconf
 from homeassistant.components.romy.const import DOMAIN
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
@@ -152,6 +153,42 @@ async def test_show_user_form_with_config_which_contains_wrong_password(
         )
 
     assert "errors" in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+
+# zero conf tests
+###################
+
+DISCOVERY_INFO = zeroconf.ZeroconfServiceInfo(
+    host="1.2.3.4",
+    hostname="aicu-aicgsbksisfapcjqmqjq.local",
+    port=8080,
+    type="mock_type",
+    addresses="addresses",
+    name="myROMY",
+    properties={zeroconf.ATTR_PROPERTIES_ID: "aicu-aicgsbksisfapcjqmqjq"},
+)
+
+
+async def test_zero_conf_unlocked_interface_robot(hass: HomeAssistant) -> None:
+    """Test zerconf with already unlocked robot."""
+
+    mocked_romy = _create_mocked_romy(
+        is_initialized=True,
+        is_unlocked=False,
+    )
+
+    with patch(
+        "homeassistant.components.romy.config_flow.romy.create_romy",
+        return_value=mocked_romy,
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            data=DISCOVERY_INFO,
+            context={"source": config_entries.SOURCE_ZEROCONF},
+        )
+
+    assert result["step_id"] == "user"
     assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
 
 
