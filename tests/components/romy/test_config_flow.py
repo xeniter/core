@@ -107,6 +107,30 @@ async def test_show_user_form_with_config_which_contains_password(
     assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
 
 
+async def test_show_user_form_with_config_which_contains_wrong_password(
+    hass: HomeAssistant,
+) -> None:
+    """Test that the user set up form with config which contains password."""
+
+    mocked_romy = _create_mocked_romy(
+        is_initialized=True,
+        is_unlocked=False,
+    )
+
+    with patch(
+        "homeassistant.components.romy.config_flow.romy.create_romy",
+        return_value=mocked_romy,
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_USER},
+            data=INPUT_CONFIG_WITH_PASS,
+        )
+
+    assert "errors" in result
+    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
+
+
 # async def test_show_user_form_with_config(hass: HomeAssistant) -> None:
 #    """Test that the user set up form with config."""
 #
