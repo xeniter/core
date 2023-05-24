@@ -248,11 +248,6 @@ ZEROCONF = {
             "domain": "volumio",
         },
     ],
-    "_aicu-http._tcp.local.": [
-        {
-            "domain": "romy",
-        },
-    ],
     "_airplay._tcp.local.": [
         {
             "domain": "apple_tv",

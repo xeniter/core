@@ -81,10 +81,14 @@ def roomba_no_wake_time():
         yield
 
 
-def _create_mocked_roomba(is_initialized=False, is_unlocked=None, connect=None):
+def _create_mocked_roomba(
+    roomba_connected=None, master_state=None, connect=None, disconnect=None
+):
     mocked_roomba = MagicMock()
-    type(mocked_roomba).is_initialized = PropertyMock(return_value=is_initialized)
-    type(mocked_roomba).is_unlocked = PropertyMock(return_value=is_unlocked)
+    type(mocked_roomba).roomba_connected = PropertyMock(return_value=roomba_connected)
+    type(mocked_roomba).master_state = PropertyMock(return_value=master_state)
+    type(mocked_roomba).connect = MagicMock(side_effect=connect)
+    type(mocked_roomba).disconnect = MagicMock(side_effect=disconnect)
     return mocked_roomba
 
 
