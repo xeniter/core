@@ -20,3 +20,4 @@ class RomyVacuumCoordinator(DataUpdateCoordinator[bool]):
 
     async def async_update_data(self) -> None:
         """Update ROMY Vacuum Cleaner data."""
+        LOGGER.error("async_update_data")

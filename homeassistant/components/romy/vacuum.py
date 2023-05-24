@@ -129,13 +129,11 @@ class RomyVacuumEntity(VacuumEntity):
         self.romy = romy
         self._device_info = device_info
         self._attr_unique_id = self.romy.unique_id
+        self._state_attrs: dict[str, Any] = {}
 
-        self._battery_level = None
+        self._is_on = False
         self._fan_speed = FAN_SPEEDS.index(FAN_SPEED_NONE)
         self._fan_speed_update = False
-        self._is_on = False
-        self._state_attrs: dict[str, Any] = {}
-        self._status = None
 
     @property
     def supported_features(self) -> VacuumEntityFeature:
@@ -145,7 +143,7 @@ class RomyVacuumEntity(VacuumEntity):
     @property
     def fan_speed(self) -> str:
         """Return the current fan speed of the vacuum cleaner."""
-        return FAN_SPEEDS[self._fan_speed]
+        return FAN_SPEEDS[self.romy.fan_speed]
 
     @property
     def fan_speed_list(self) -> list[str]:
@@ -155,12 +153,12 @@ class RomyVacuumEntity(VacuumEntity):
     @property
     def battery_level(self) -> None | int:
         """Return the battery level of the vacuum cleaner."""
-        return self._battery_level
+        return self.romy.battery_level
 
     @property
     def status(self) -> None | str:
         """Return the status of the vacuum cleaner."""
-        return self._status
+        return self.romy.status
 
     @property
     def is_on(self) -> bool:
@@ -185,67 +183,48 @@ class RomyVacuumEntity(VacuumEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the vacuum on."""
         LOGGER.debug("async_turn_on")
-        # is_on, _ = await self.romy_async_query(
-        #    f"set/clean_start_or_continue?cleaning_parameter_set={self._fan_speed}"
-        # )
-        # if is_on:
-        #    self._is_on = True
+        ret = await self.romy.async_clean_start_or_continue()
+        if ret:
+            self._is_on = True
 
+    # turn off robot (-> sending back to docking station)
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the vacuum off and return to home."""
         LOGGER.debug("async_turn_off")
-        # await self.async_return_to_base()
+        ret = self.romy.async_return_to_base()
+        if ret:
+            self._is_on = False
 
+    # stop robot (-> sending back to docking station)
     async def async_stop(self, **kwargs: Any) -> None:
         """Stop the vacuum cleaner."""
         LOGGER.debug("async_stop")
-        # is_off, _ = await self.romy_async_query("set/stop")
-        # if is_off:
-        #    self._is_on = False
+        await self.async_turn_off()
 
+    # pause robot (api call stop means stop robot where is is and not sending back to docking station)
     async def async_pause(self, **kwargs: Any) -> None:
         """Pause the cleaning cycle."""
         LOGGER.debug("async_pause")
-        # is_off, _ = await self.romy_async_query("set/stop")
-        # if is_off:
-        #    self._is_on = False
+        ret = self.romy.async_stop()
+        if ret:
+            self._is_on = False
 
     async def async_start_pause(self, **kwargs: Any) -> None:
         """Pause the cleaning task or resume it."""
         LOGGER.debug("async_start_pause")
-        # if self.is_on:
-        #    await self.async_stop()
-        # else:
-        #    await self.async_turn_on()
-
-    # return_to_base -> run go_home
-    async def async_return_to_base(self, **kwargs: Any) -> None:
-        """Set the vacuum cleaner to return to the dock."""
-        LOGGER.debug("async_return_to_base")
-        # is_on, _ = await self.romy_async_query("set/go_home")
-        # if is_on:
-        #    self._is_on = False
+        if self.is_on:
+            await self.async_pause()
+        else:
+            await self.async_turn_on()
 
     async def async_set_fan_speed(self, fan_speed: str, **kwargs: Any) -> None:
         """Set fan speed."""
         LOGGER.debug("async_set_fan_speed to %s", fan_speed)
-        # if fan_speed in FAN_SPEEDS:
-        #    self._fan_speed_update = True
-        #    self._fan_speed = FAN_SPEEDS.index(fan_speed)
-        #    ret, response = await self.romy_async_query(
-        #        f"set/switch_cleaning_parameter_set?cleaning_parameter_set={self._fan_speed}"
-        #    )
-        #    self._fan_speed_update = False
-        #    if not ret:
-        #        LOGGER.error(
-        #            " async_set_fan_speed -> async_query response: %s", response
-        #        )
-        # else:
-        #    LOGGER.error("No such fan speed available: %d", fan_speed)
+        await self.romy.async_set_fan_speed(FAN_SPEEDS.index(fan_speed))
 
     async def async_update(self) -> None:
         """Fetch state from the device."""
-        LOGGER.debug("async_update")
+        LOGGER.error("async_update")
 
         # ret, response = await self.romy_async_query("get/status")
         # if ret:
