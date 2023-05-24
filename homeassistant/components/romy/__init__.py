@@ -7,19 +7,6 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, LOGGER, PLATFORMS
-<<<<<<< HEAD
-from homeassistant.const import CONF_HOST, CONF_PASSWORD
-from homeassistant.core import HomeAssistant
-
-from .const import DOMAIN, PLATFORMS
-
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
-from homeassistant.core import HomeAssistant
-
-from .const import DOMAIN, PLATFORMS, LOGGER
->>>>>>> a659795225 (adding poc)
-=======
->>>>>>> e6edcb7c2b (adding poc5)
 from .coordinator import RomyVacuumCoordinator
 
 
