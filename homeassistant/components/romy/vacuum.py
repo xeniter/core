@@ -10,13 +10,18 @@ from typing import Any
 
 from romy import RomyRobot
 
-from homeassistant.components.vacuum import VacuumEntity, VacuumEntityFeature
+from homeassistant.components.vacuum import StateVacuumEntity, VacuumEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, ICON, LOGGER
 from .coordinator import RomyVacuumCoordinator
+
+# wtf: VacuumEntity
+# todo? STATE_CLEANING, STATE_DOCKED, STATE_IDLE, STATE_PAUSED, STATE_RETURNING,
+
 
 FAN_SPEED_NONE = "Default"
 FAN_SPEED_NORMAL = "Normal"
@@ -72,7 +77,7 @@ async def async_setup_entry(
     async_add_entities(entities, True)
 
 
-class RomyVacuumEntity(VacuumEntity):
+class RomyVacuumEntity(CoordinatorEntity[RomyVacuumCoordinator], StateVacuumEntity):
     """Representation of a ROMY vacuum cleaner robot."""
 
     def __init__(
@@ -82,7 +87,8 @@ class RomyVacuumEntity(VacuumEntity):
         device_info: dict[str, Any],
     ) -> None:
         """Initialize the ROMY Robot."""
-        self.coordinator = coordinator
+        super().__init__(coordinator)
+        # self.coordinator = coordinator
         self.romy = romy
         self._device_info = device_info
         self._attr_unique_id = self.romy.unique_id
