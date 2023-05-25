@@ -10,14 +10,16 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DOMAIN, LOGGER, UPDATE_INTERVAL
 
 
-class RomyVacuumCoordinator(DataUpdateCoordinator[bool]):
+class RomyVacuumCoordinator(DataUpdateCoordinator):
     """ROMY Vacuum Coordinator."""
+
     def __init__(self, hass: HomeAssistant, romy: RomyRobot) -> None:
         """Setuping ROMY Vacuum Coordinator class."""
         super().__init__(hass, LOGGER, name=DOMAIN, update_interval=UPDATE_INTERVAL)
         self.hass = hass
         self.romy = romy
+        LOGGER.error("Coordinator init")
 
-    async def async_update_data(self) -> None:
+    async def _async_update_data(self) -> None:
         """Update ROMY Vacuum Cleaner data."""
-        LOGGER.error("async_update_data")
+        LOGGER.error("Async_update_data")

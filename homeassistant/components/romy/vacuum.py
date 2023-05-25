@@ -49,49 +49,6 @@ SUPPORT_ROMY_ROBOT = (
     | VacuumEntityFeature.FAN_SPEED
 )
 
-async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    """Set up ROMY vacuum cleaner."""
-
-    coordinator: RomyVacuumCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    romy: RomyRobot = coordinator.romy
-
-    device_info = {
-        "manufacturer": "ROMY",
-        "model": romy.model,
-        "sw_version": romy.firmware,
-        "identifiers": {"serial": romy.unique_id},
-    }
-
-    romy_vacuum_entity = RomyVacuumEntity(coordinator, romy, device_info)
-    entities = [romy_vacuum_entity]
-    async_add_entities(entities, True)
-
-
-async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    """Set up ROMY vacuum cleaner."""
-
-    coordinator: RomyVacuumCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    romy: RomyRobot = coordinator.romy
-
-    device_info = {
-        "manufacturer": "ROMY",
-        "model": romy.model,
-        "sw_version": romy.firmware,
-        "identifiers": {"serial": romy.unique_id},
-    }
-
-    romy_vacuum_entity = RomyVacuumEntity(coordinator, romy, device_info)
-    entities = [romy_vacuum_entity]
-    async_add_entities(entities, True)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -187,25 +144,30 @@ class RomyVacuumEntity(VacuumEntity):
         if ret:
             self._is_on = True
 
-    # turn off robot (-> sending back to docking station)
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the vacuum off and return to home."""
-        LOGGER.debug("async_turn_off")
-        ret = self.romy.async_return_to_base()
+    async def async_return_to_base(self, **kwargs: Any) -> None:
+        """Return vacuum back to base."""
+        LOGGER.debug("async_return_to_base")
+        ret = await self.romy.async_return_to_base()
         if ret:
             self._is_on = False
 
+    # turn off robot (-> sending back to docking station)
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the vacuum off (-> send it back to docking station)."""
+        LOGGER.debug("async_turn_off")
+        await self.async_return_to_base()
+
     # stop robot (-> sending back to docking station)
     async def async_stop(self, **kwargs: Any) -> None:
-        """Stop the vacuum cleaner."""
+        """Stop the vacuum cleaner. (-> send it back to docking station)."""
         LOGGER.debug("async_stop")
-        await self.async_turn_off()
+        await self.async_return_to_base()
 
     # pause robot (api call stop means stop robot where is is and not sending back to docking station)
     async def async_pause(self, **kwargs: Any) -> None:
         """Pause the cleaning cycle."""
         LOGGER.debug("async_pause")
-        ret = self.romy.async_stop()
+        ret = await self.romy.async_stop()
         if ret:
             self._is_on = False
 
@@ -222,27 +184,28 @@ class RomyVacuumEntity(VacuumEntity):
         LOGGER.debug("async_set_fan_speed to %s", fan_speed)
         await self.romy.async_set_fan_speed(FAN_SPEEDS.index(fan_speed))
 
-    async def async_update(self) -> None:
-        """Fetch state from the device."""
-        LOGGER.error("async_update")
 
-        # ret, response = await self.romy_async_query("get/status")
-        # if ret:
-        #    status = json.loads(response)
-        #    self._status = status["mode"]
-        #    self._battery_level = status["battery_level"]
-        # else:
-        #    LOGGER.error(
-        #        "ROMY function async_update -> async_query response: %s", response
-        #    )
+#    async def async_update(self) -> None:
+#        """Fetch state from the device."""
+#        LOGGER.error("async_update")
 
-        # ret, response = await self.romy_async_query("get/cleaning_parameter_set")
-        # if ret:
-        #    status = json.loads(response)
-        #    # dont update if we set fan speed currently:
-        #    if not self._fan_speed_update:
-        #        self._fan_speed = status["cleaning_parameter_set"]
-        # else:
-        #    LOGGER.error(
-        #        "FOMY function async_update -> async_query response: %s", response
-        #   )
+# ret, response = await self.romy_async_query("get/status")
+# if ret:
+#    status = json.loads(response)
+#    self._status = status["mode"]
+#    self._battery_level = status["battery_level"]
+# else:
+#    LOGGER.error(
+#        "ROMY function async_update -> async_query response: %s", response
+#    )
+
+# ret, response = await self.romy_async_query("get/cleaning_parameter_set")
+# if ret:
+#    status = json.loads(response)
+#    # dont update if we set fan speed currently:
+#    if not self._fan_speed_update:
+#        self._fan_speed = status["cleaning_parameter_set"]
+# else:
+#    LOGGER.error(
+#        "FOMY function async_update -> async_query response: %s", response
+#   )
