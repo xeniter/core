@@ -1651,13 +1651,7 @@ ring_doorbell==0.7.2
 rokuecp==0.18.0
 
 # homeassistant.components.romy
-romy==0.0.1
-
-# homeassistant.components.romy
-romy==0.0.1
-
-# homeassistant.components.romy
-romy==0.0.10
+romy==0.0.15
 
 # homeassistant.components.roomba
 roombapy==1.6.8
