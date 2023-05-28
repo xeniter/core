@@ -119,8 +119,8 @@ class RomyVacuumEntity(CoordinatorEntity[RomyVacuumCoordinator], StateVacuumEnti
         return self.romy.battery_level
 
     @property
-    def status(self) -> None | str:
-        """Return the status of the vacuum cleaner."""
+    def state(self) -> None | str:
+        """Return the state/status of the vacuum cleaner."""
         return self.romy.status
 
     @property
