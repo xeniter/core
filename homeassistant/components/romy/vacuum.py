@@ -19,10 +19,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN, ICON, LOGGER
 from .coordinator import RomyVacuumCoordinator
 
-# wtf: VacuumEntity
-# todo? STATE_CLEANING, STATE_DOCKED, STATE_IDLE, STATE_PAUSED, STATE_RETURNING,
-
-
 FAN_SPEED_NONE = "Default"
 FAN_SPEED_NORMAL = "Normal"
 FAN_SPEED_SILENT = "Silent"
@@ -88,7 +84,6 @@ class RomyVacuumEntity(CoordinatorEntity[RomyVacuumCoordinator], StateVacuumEnti
     ) -> None:
         """Initialize the ROMY Robot."""
         super().__init__(coordinator)
-        # self.coordinator = coordinator
         self.romy = romy
         self._device_info = device_info
         self._attr_unique_id = self.romy.unique_id
