@@ -9,6 +9,6 @@ from homeassistant.const import Platform
 # name for the integration.
 DOMAIN = "romy"
 ICON = "mdi:robot-vacuum"
-PLATFORMS = [Platform.VACUUM, Platform.BINARY_SENSOR]
+PLATFORMS = [Platform.VACUUM, Platform.BINARY_SENSOR, Platform.SENSOR]
 UPDATE_INTERVAL = timedelta(seconds=5)
 LOGGER = logging.getLogger(__package__)

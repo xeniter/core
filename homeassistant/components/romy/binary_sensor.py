@@ -70,7 +70,7 @@ async def async_setup_entry(
         romy_binary_sensor_entitiy_watertank_empty,
     ]
 
-    # add only supported / available sensors:
+    # add only supported / available binary sensors:
     supported_binary_sensor_entities = []
     for binary_sensor_entity in all_binary_sensor_entities:
         if binary_sensor_entity.device_descriptor in romy.binary_sensors:
